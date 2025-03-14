@@ -21,8 +21,8 @@ var NPR;
 var WT;
 var HouseSeqNo = "";
 var RNO;
-
-
+var imgDataForSave = '';
+var ImagesXmlGen = '';
 $(function () {
 
     var language = window.localStorage.getItem("Language");
@@ -41,6 +41,9 @@ $(function () {
             setTurkish();
             break;
     }
+
+    document.getElementById("cameraTakePicture").addEventListener
+        ("click", cameraTakePicture);
 
 });
 
@@ -122,7 +125,7 @@ function GetWDOdetails() {
         //$.alert(errmsg);
         return;
     }
-
+    signaturePad.clear();
 
     if (errmsg == "" && connectionStatus == "online") {
         $.ajax({
@@ -290,7 +293,7 @@ function GetWDOdetailsOnChange(AWBValRNo) {
                 var xmlDoc = $.parseXML(Result);
 
                 var str = Result;
-               
+
                 if (str != null && str != "" && str != "<NewDataSet />") {
 
                     $(xmlDoc).find('Table').each(function (index) {
@@ -511,6 +514,13 @@ function SaveDetails() {
             UldSeqNo = SEQ_NO;
         }
 
+        canvas = document.getElementById('signature-pad');
+        signitureData = canvas.toDataURL("image/jpeg");
+        str = signitureData;
+        signitureDataURL = str.substring(23);
+
+        AllImages(imageDataForArray);
+
         if (errmsg == "" && connectionStatus == "online") {
             $.ajax({
                 type: "POST",
@@ -519,7 +529,9 @@ function SaveDetails() {
                     'strWDOId': WDOid, 'strStatusKey': status, 'strCompanyCode': CompanyCode,
                     'strUserID': UserId, 'strWitnessedBy': UserId, 'strId': '',
                     'strCollectorsName': '', 'imgSignAgent': '', 'CustomRefNo': CustomRefNo,
-                    'LocXML': LocXML, 'Dlvxml': DLVXML, 'UldSeqNo': UldSeqNo
+                    'LocXML': LocXML, 'Dlvxml': DLVXML, 'UldSeqNo': UldSeqNo,
+                    'Signature': '<Root><SignatureImage>' + signitureDataURL + '</SignatureImage></Root>',
+                    'Images': '<Root><Images>' + ImagesXmlGen + '</Images></Root>'
                 }),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -534,16 +546,37 @@ function SaveDetails() {
                     $.alert(response.d);
                     //window.location.reload();
                     ChkAndValidate();
+                    ClearAllFieldAfterSave();
                 },
+                //error: function (msg) {
+                //    $("body").mLoading('hide');
+                //    $.alert('Some error occurred while saving data');
+                //}
                 error: function (msg) {
+                    //debugger;
                     $("body").mLoading('hide');
-                    $.alert('Some error occurred while saving data');
+                    var r = jQuery.parseJSON(msg.responseText);
+                    $.alert(r.Message);
                 }
             });
             return false;
         }
     }
 
+}
+
+function ClearAllFieldAfterSave() {
+    $('#txtWDONo').val('');
+    $('#txtWDONo').focus();
+    $('#ddlAWB').empty();
+    $('#txtAWBNo').val('');
+    $('#txtHAWBNo').val('');
+    $('#txtPcs').val('');
+    $('#txtWt').val('');
+    $('#txtLocation').val('');
+    $('#txtCustomRefNo').val('');
+    signaturePad.clear();
+    $('#divImages').empty();
 }
 
 function SavePartShipmentDetails() {
@@ -647,3 +680,119 @@ function ClearFields() {
 }
 
 
+var canvas = document.getElementById('signature-pad');
+
+// Adjust canvas coordinate space taking into account pixel ratio,
+// to make it look crisp on mobile devices.
+// This also causes canvas to be cleared.
+//function resizeCanvas() {
+
+//    // When zoomed out to less than 100%, for some very strange reason,
+//    // some browsers report devicePixelRatio as less than 1
+//    // and only part of the canvas is cleared then.
+//    var ratio = Math.max(window.devicePixelRatio || 1, 1);
+//    canvas.width = canvas.offsetWidth * ratio;
+//    canvas.height = canvas.offsetHeight * ratio;
+//    canvas.getContext("2d").scale(ratio, ratio);
+//}
+
+function resizeCanvas() {
+
+    var cachedWidth;
+    var cachedImage;
+
+    if (canvas.offsetWidth !== cachedWidth) { //add
+        if (typeof signaturePad != 'undefined') { // add
+            cachedImage = signaturePad.toDataURL("image/png");
+        }
+        cachedWidth = canvas.offsetWidth;   //add
+        // When zoomed out to less than 100%, for some very strange reason,
+        // some browsers report devicePixelRatio as less than 1
+        // and only part of the canvas is cleared then.
+        var ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        if (typeof signaturePad != 'undefined') {
+            // signaturePad.clear(); // remove
+            signaturePad.fromDataURL(cachedImage); // add
+        }
+    }
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+var signaturePad = new SignaturePad(canvas, {
+    backgroundColor: 'rgb(255, 255, 255)' // necessary for saving image as JPEG; can be removed is only saving as PNG or SVG
+});
+
+
+
+document.getElementById('clear').addEventListener('click', function () {
+    signaturePad.clear();
+});
+var data = signaturePad.toData();
+document.getElementById('undo').addEventListener('click', function () {
+
+    if (data) {
+        data.pop(); // remove the last dot or line
+        signaturePad.fromData(data);
+    }
+});
+
+signaturePad.fromData(data, { clear: false });
+
+var imageDataForArray = new Array();
+function cameraTakePicture() {
+
+    navigator.camera.getPicture(onSuccess, onFail, {
+
+        destinationType: Camera.DestinationType.DATA_URL, //DATA_URL , FILE_URI
+        sourceType: Camera.PictureSourceType.CAMERA,
+        encodingType: Camera.EncodingType.JPG,
+        mediaType: Camera.MediaType.PICTURE,
+        targetWidth: 500,
+        targetHeight: 500,
+        saveToPhotoAlbum: true,
+        correctOrientation: true //Corrects Android orientation quirks
+    });
+
+}
+function onSuccess(imageData) {
+    //var image = document.getElementById('myImage');
+    var data = "data:image/jpeg;base64," + imageData;
+    imgDataForSave = imageData;
+    //$('#myImage').attr('src', data);
+    //$('#myImage').css('display', 'block');
+    // console.log(imgData);
+    imageDataForArray.push(imgDataForSave);
+    htmlImages = '';
+    // $("#onlyimageCount").text(imageDataForArray.length);
+    //for (var i = 0; i < imageDataForArray.length; i++) {
+    htmlImages += '<div class="form-group col-xs-4 col-sm-4 col-md-4" style="margin-top:20px;">';
+    htmlImages += '<img id="myImage" src="' + data + '" height="100" width="100" style="display:block;" />';
+    htmlImages += '</div>';
+
+    $('#divImages').append(htmlImages);
+    if (imageDataForArray.length == 3) {
+        $("#cameraTakePicture").attr('disabled', 'disabled');
+    }
+    console.log(imageDataForArray);
+
+}
+
+function onFail(message) {
+    alert('Failed because: ' + message);
+}
+function AllImages(imageDataForArray) {
+    ImagesXmlGen = '';
+    // ImagesXmlGen = "<DamageRecordImage>";
+    for (var n = 0; n < imageDataForArray.length; n++) {
+        ImagesXmlGen += "<Img>" + imageDataForArray[n] + "</Img>";
+    }
+    // ImagesXmlGen += "</DamageRecordImage>";
+    console.log(ImagesXmlGen);
+    return ImagesXmlGen;
+
+}

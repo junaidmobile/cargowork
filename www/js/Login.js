@@ -13,9 +13,10 @@
 //var baseURL = "http://13.73.167.211/GalaxyUAT/";
 
 // commnted by Shruti on 27-02-2023 for CHI work
-var baseURL = "https://chi.kalelogistics.com/Galaxy/";
-//var baseURL = "https://wgh.kalelogistics.com/wgh/";
-
+//var baseURL = "https://chi.kalelogistics.com/GalaxyNUE/";
+//nue 16102024
+//var baseURL = "https://nue.kalelogistics.com/GalaxyNUE/";
+var baseURL = "http://10.22.2.71:8080/CHI/";
 // Commented by Shruti on 27-02-2023 for CHI work
 var CMSserviceURL = 'http://113.193.225.59:8080/CHI/services/hhtexpservices.asmx/';
 
@@ -124,6 +125,11 @@ function ProcessLogin() {
             data: JSON.stringify({ 'LoginName': Uname, 'Password': Pass }),
             contentType: "application/json; charset=utf-8",
             dataType: "json",
+            beforeSend: function doStuff() {
+                $('body').mLoading({
+                    text: "Loading..",
+                });
+            },
             success: function (response) {
                 HideLoader();
                 var str = response.d;

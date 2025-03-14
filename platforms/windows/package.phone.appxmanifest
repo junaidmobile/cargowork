@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
-    <Identity Name="com.GALAXY" Publisher="CN=$username$" Version="1.0.2.0" />
+    <Identity Name="com.GALAXY.NUE" Publisher="CN=$username$" Version="1.0.7.0" />
     <mp:PhoneIdentity PhoneProductId="fe41a760-6d69-11e9-9022-b753f5159f4f" PhonePublisherId="db093ed5-53b1-45f7-af72-751e8f36ab80" />
     <Properties>
         <DisplayName>GALAXY</DisplayName>
@@ -16,7 +16,7 @@
         <Resource Language="x-generate" />
     </Resources>
     <Applications>
-        <Application Id="com.GALAXY" StartPage="www/Login.html">
+        <Application Id="com.GALAXY.NUE" StartPage="www/Login.html">
             <m3:VisualElements BackgroundColor="transparent" Description="A sample Apache Cordova application that responds to the deviceready event." DisplayName="GALAXYAPP" ForegroundText="light" Square150x150Logo="images/Square150x150Logo.png" Square44x44Logo="images/Square44x44Logo.png">
                 <m3:DefaultTile Square71x71Logo="images/Square71x71Logo.png">
                     <m3:ShowNameOnTiles>

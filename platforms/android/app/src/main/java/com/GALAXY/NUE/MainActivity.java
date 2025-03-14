@@ -17,7 +17,7 @@
        under the License.
  */
 
-package com.GALAXY;
+package com.GALAXY.NUE;
 
 import android.os.Bundle;
 import org.apache.cordova.*;
